@@ -108,7 +108,8 @@ def TempObservations():
 
     # Query the last 12 months of temperature observation data for this station
     results = session.query(Measurement.date, Measurement.tobs)\
-                            .filter(Measurement.date > query_date).all()
+                            .filter(Measurement.date > query_date)\
+                            .filter_by(station = "USC00519281").all()
 
     session.close()
 
@@ -122,6 +123,36 @@ def TempObservations():
         all_tempObs.append(temp_dict)
 
     return jsonify(all_tempObs)
+
+@app.route("/api/v1.0/<start>")
+def startDate():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    # Enter the start date
+    Start_date = dt(input("Enter a start date:"))
+
+    query_date = Start_date
+
+    # Query the temperature observation data for the given date
+    results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs))\
+                            .filter(Measurement.date >= query_date).all()
+
+    session.close()
+
+    # Create a dictionary from the row data and append to a list of all_precipitation
+    all_tempObs2 = []
+    for result in results:
+        temp2_dict = {}
+        temp2_dict["Min Temperature"] = result[0]
+        temp2_dict["Max temperature"] = result[1]
+        temp2_dict["Avg temperature"] = result[2]
+        
+        all_tempObs2.append(temp2_dict)
+
+    return jsonify(all_tempObs2)
+
+
 #     # Convert list of tuples into normal list
 #     all_names = list(np.ravel(results))
 
