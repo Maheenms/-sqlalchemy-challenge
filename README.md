@@ -14,7 +14,7 @@ In this assignment, we need to do some climate analysis of our vacation destinat
 
 In this section, we need to use Python and SQLAlchemy to perform basic climate analysis and data exploration of the climate database given.
 
-* We need to use the provided [starter notebook](climate_starter.ipynb) and [hawaii.sqlite](Resources/hawaii.sqlite) files to complete our climate analysis and data exploration.
+* We need to use [hawaii.sqlite](Resources/hawaii.sqlite) files to complete our climate analysis and data exploration.
 
 * We would use SQLAlchemy’s `create_engine` to connect to our SQLite database.
 
@@ -68,7 +68,7 @@ To perform an analysis of stations in the area, we need to do the following:
 
     * Close out our session.
 
-### Part 2: Design Your Climate App
+### Part 2: Design Climate App
 
 For this part, we need to design a Flask API based on the queries that we developed above.
 
@@ -108,6 +108,8 @@ We will use Flask to create our routes, as follows:
 ### Conclusion :
 
 From the tables and graphs, the temperatures for honululu, hawaii ranges mostly between 70-80 degrees farenheit. This is a good weather for us to enjoy our holiday trip. 
-![Image](images/histogram_of_tempObs.png)
+![Image](Images/histogram_of_tempObs.png)   
+
+
 From the precipitation plot, we can see that the best time of year to go for our trip would be in August. As the precipitation values are less in August
-![Image](images/line-plot-of-precipitation.png) 
+![Image](Images/line-plot-of-precipitation.png) 
