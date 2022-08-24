@@ -33,6 +33,10 @@ app = Flask(__name__)
 # Flask Routes
 #################################################
 
+# /
+# Homepage.
+# List all available routes.
+
 @app.route("/")
 def Homepage():
     """List all available api routes."""
@@ -45,6 +49,10 @@ def Homepage():
         f"/api/v1.0/<start>/<end>"
 
     )
+
+# /api/v1.0/precipitation
+# Convert the query results to a dictionary using date as the key and prcp as the value.
+# Return the JSON representation of your dictionary.    
 
 @app.route("/api/v1.0/precipitation")
 def datesAndprcp():
@@ -75,6 +83,8 @@ def datesAndprcp():
 
     return jsonify(all_precipitation)
 
+# /api/v1.0/stations
+# Return a JSON list of stations from the dataset.
 
 @app.route("/api/v1.0/stations")
 def Stations():
@@ -92,7 +102,9 @@ def Stations():
 
     return jsonify(all_stations)
 
-
+#/api/v1.0/tobs
+# Query the dates and temperature observations of the most active station for the previous year of data.
+# Return a JSON list of temperature observations (TOBS) for the previous year.
 
 @app.route("/api/v1.0/tobs")
 def TempObservations():
@@ -124,62 +136,63 @@ def TempObservations():
 
     return jsonify(all_tempObs)
 
+# /api/v1.0/<start> and /api/v1.0/<start>/<end>
+# Return a JSON list of the minimum temperature, the average temperature, and the maximum temperature for a given start or start-end range.
+# When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than or equal to the start date.
+# When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates from the start date through the end date (inclusive).
+
 @app.route("/api/v1.0/<start>")
-def startDate():
+def startDate(start):
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    # Enter the start date
-    Start_date = dt(input("Enter a start date:"))
+    # make a start date variable
+    Start_date = dt.datetime.strptime(start,"%Y-%m-%d")
 
-    query_date = Start_date
-
-    # Query the temperature observation data for the given date
     results = session.query(func.min(Measurement.tobs), func.max(Measurement.tobs),func.avg(Measurement.tobs))\
-                            .filter(Measurement.date >= query_date).all()
+                            .filter(Measurement.date >= Start_date).all()
 
     session.close()
 
-    # Create a dictionary from the row data and append to a list of all_precipitation
-    all_tempObs2 = []
+    # Create a dictionary from the row data and append to a list of all_TOBS from the start date 
+    all_TOBS_start_date = []
     for result in results:
-        temp2_dict = {}
-        temp2_dict["Min Temperature"] = result[0]
-        temp2_dict["Max temperature"] = result[1]
-        temp2_dict["Avg temperature"] = result[2]
+         temp2_dict = {}
+         temp2_dict["Min Temperature"] = result[0]
+         temp2_dict["Max temperature"] = result[1]
+         temp2_dict["Avg temperature"] = result[2]
         
-        all_tempObs2.append(temp2_dict)
+    all_TOBS_start_date.append(temp2_dict)
 
-    return jsonify(all_tempObs2)
+    return jsonify(all_TOBS_start_date)
 
+@app.route("/api/v1.0/<start>/<end>")
+def start_end_dates(start, end):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    # Query the avg, min and max temp
+    results = session.query(func.avg(Measurement.tobs), func.min(Measurement.tobs), func.max(Measurement.tobs))\
+                            .filter(Measurement.date >= start)\
+                            .filter(Measurement.date <= end).all()
+    # Close session
+    session.close()
 
-#     # Convert list of tuples into normal list
-#     all_names = list(np.ravel(results))
+    # Another way of finding the avg, min and max temps
+    # start_and_end = list(np.ravel(results))
+    # return jsonify(start_and_end)
 
-#     return jsonify(all_names)
+    # Create a dictionary from the row data and append to a list of all_TOBS
+    all_TOBS = []
+    for result in results:
+         temp2_dict = {}
+         temp2_dict["Avg Temperature"] = result[0]
+         temp2_dict["Min temperature"] = result[1]
+         temp2_dict["Max temperature"] = result[2]
+        
+    all_TOBS.append(temp2_dict)
 
-# @app.route("/api/v1.0/pets")
-# def pets():
-#     # Create our session (link) from Python to the DB
-#     session = Session(engine)
-
-#     """Return a list of pet data including the name, type, and age of each pet"""
-#     # Query all pets
-#     results = session.query(Pet.name, Pet.age, Pet.type).all()
-
-#     session.close()
-
-#     # Create a dictionary from the row data and append to a list of all_passengers
-#     all_pets = []
-#     for name, age, type in results:
-#         pet_dict = {}
-#         pet_dict["name"] = name
-#         pet_dict["age"] = age
-#         pet_dict["type"] = type
-#         all_pets.append(pet_dict)
-
-#     return jsonify(all_pets)
+    return jsonify(all_TOBS)
 
 #################################################
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port = 8000)
